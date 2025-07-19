@@ -311,20 +311,19 @@ const Dashboard = () => {
 
   const [analytics, setAnalytics] = useState({});
   const [url, setUrl] = useState("https://www.dnsbank.in");
-  const [strategy, setStrategy] = useState("mobile");
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    debugger;
-    async function fetchData() {
-      setIsLoading(true);
-      const data = await fetchPageSpeed(url, strategy);
-      console.log("data", data);
-      setAnalytics(data);
-      setIsLoading(false);
-    }
-    fetchData();
-  }, [strategy, url]);
+  async function fetchData(url, strategy) {
+    setIsLoading(true);
+    const data = await fetchPageSpeed(url, strategy);
+    console.log("data", data);
+    setAnalytics(data);
+    setIsLoading(false);
+  }
+
+  const handleAnalyse = (url, strategy) => {
+    fetchData(url, strategy);
+  };
 
   return (
     <div style={styles.container}>
@@ -364,9 +363,8 @@ const Dashboard = () => {
 
         <div>
           <SearchBarComponent
-            setUrl={setUrl}
+            handleAnalyse={handleAnalyse}
             isLoading={isLoading}
-            setStrategy={setStrategy}
             url={url}
           ></SearchBarComponent>
         </div>
