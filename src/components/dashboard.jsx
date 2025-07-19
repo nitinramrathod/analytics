@@ -26,6 +26,8 @@ import SearchBarComponent from "./SearchBar";
 import { fetchPageSpeed } from "./common";
 import { MetricsDashboard } from "./metrics/Metrics";
 import PageSpeedDashboard from "./metrics/NewMetrics";
+import WebVitalsStats from "./metrics/WebVitalsStats";
+import PerformanceCards from "./metrics/PerformanceCards";
 
 const Dashboard = () => {
   const [timeFilter, setTimeFilter] = useState("7d");
@@ -95,7 +97,6 @@ const Dashboard = () => {
   // Style objects
   const styles = {
     container: {
-      minHeight: "100vh",
       backgroundColor: "#f9fafb",
       padding: "1.5rem",
     },
@@ -365,152 +366,17 @@ const Dashboard = () => {
         {/* {analytics?.loadingExperience?.metrics && (
           <MetricsDashboard metrics={analytics.loadingExperience.metrics} />
         )} */}
+        {/* {analytics?.loadingExperience?.metrics && (
+          <WebVitalsStats metrics={analytics.loadingExperience.metrics} />
+        )} */}
+
+        {analytics?.loadingExperience?.metrics && (
+          <PerformanceCards metrics={analytics} />
+        )}
 
         {analytics?.loadingExperience?.metrics && (
           <PageSpeedDashboard data={analytics} />
         )}
-        <div style={styles.metricsGrid} className="metrics-grid">
-          {metrics.map((metric, index) => {
-            const Icon = metric.icon;
-            const trendStyles = {
-              ...styles.trendBadge,
-              color: metric.trend === "up" ? "#059669" : "#dc2626",
-              background: metric.trend === "up" ? "#d1fae5" : "#fee2e2",
-            };
-
-            return (
-              <div
-                key={index}
-                style={styles.metricCard}
-                className="metric-card"
-              >
-                <div style={styles.metricHeader}>
-                  <div style={{ ...styles.iconContainer, color: metric.color }}>
-                    <Icon size={24} />
-                  </div>
-                  <span style={trendStyles}>{metric.change}</span>
-                </div>
-                <div>
-                  <h3 style={styles.metricTitle}>{metric.title}</h3>
-                  <p style={styles.metricValue}>{metric.value}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Charts Grid */}
-        <div style={styles.chartsGrid} className="charts-grid">
-          {/* Revenue Chart */}
-          <div style={styles.chartCard}>
-            <div style={styles.chartHeader}>
-              <h2 style={styles.chartTitle}>Revenue Overview</h2>
-              <div style={styles.legend}>
-                <div style={styles.legendItem}>
-                  <div style={{ ...styles.legendDot, background: "#3B82F6" }} />
-                  <span style={styles.legendText}>Revenue</span>
-                </div>
-                <div style={styles.legendItem}>
-                  <div style={{ ...styles.legendDot, background: "#10B981" }} />
-                  <span style={styles.legendText}>Users</span>
-                </div>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "white",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Bar dataKey="revenue" fill="#3B82F6" radius={4} />
-                <Bar dataKey="users" fill="#10B981" radius={4} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Traffic Sources */}
-          <div style={styles.chartCard}>
-            <h2 style={styles.chartTitle}>Traffic Sources</h2>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={trafficData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {trafficData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div style={styles.trafficGrid}>
-              {trafficData.map((item, index) => (
-                <div key={index} style={styles.trafficItem}>
-                  <div
-                    style={{ ...styles.legendDot, background: item.color }}
-                  />
-                  <span style={styles.legendText}>{item.name}</span>
-                  <span style={styles.trafficValue}>{item.value}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Activity Chart */}
-        <div style={styles.chartCard}>
-          <div style={styles.activityHeader}>
-            <div style={styles.activityTitleContainer}>
-              <Activity size={20} color="#2563eb" />
-              <h2 style={styles.chartTitle}>User Activity</h2>
-            </div>
-            <span style={styles.activityDescription}>
-              Users active throughout the day
-            </span>
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={activityData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="time" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                }}
-              />
-              <Line
-                type="monotone"
-                dataKey="users"
-                stroke="#3B82F6"
-                strokeWidth={3}
-                dot={{ fill: "#3B82F6", strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: "#3B82F6", strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
       </div>
     </div>
   );
