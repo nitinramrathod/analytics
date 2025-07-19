@@ -1,18 +1,41 @@
-import React, { useState } from 'react';
-import { Search, Plus } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Search, Plus, Loader } from 'lucide-react';
+import styled from '@emotion/styled';
 
-const SearchBarComponent = () => {
-  const [url, setUrl] = useState('');
 
-  const handleSubmit = () => {
-    if (url.trim()) {
-      console.log('Adding URL:', url);
-      // Add your URL handling logic here
-      alert(`URL added: ${url}`);
-      setUrl(''); // Clear input after submission
-    }
-  };
+const SelectWrapper = styled.div`
+  /* margin: 1rem; */
+  display: flex;
+  flex-direction: column;
+`;
 
+const StyledSelect = styled.select`
+  padding: 10px;
+  border: 2px solid #797979;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: white;
+  color: #1e293b;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+  }
+`;
+
+const StyledLabel = styled.label`
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+`;
+
+const SearchBarComponent = ({
+  setUrl,
+  url,
+  isLoading,
+  setStrategy
+}) => {
   const styles = {
     container: {
     backgroundColor: '#f9fafb',
@@ -57,8 +80,9 @@ const SearchBarComponent = () => {
     },
     input: {
       width: '100%',
-      padding: '12px 16px',
-      paddingLeft: '44px',
+      padding: '10px 16px',
+      
+      paddingLeft: '40px',
       fontSize: '16px',
       fontWeight: '500',
       color: '#111827',
@@ -83,7 +107,7 @@ const SearchBarComponent = () => {
       display: 'flex',
       alignItems: 'center',
       gap: '0.5rem',
-      padding: '12px 24px',
+      padding: '14px 24px',
       fontSize: '14px',
       fontWeight: '600',
       color: 'white',
@@ -121,6 +145,23 @@ const SearchBarComponent = () => {
     ...(!url.trim() ? styles.buttonDisabled : {})
   };
 
+
+  const inputRef = useRef(null);
+  const selectRef = useRef(null);
+
+  const handleSubmit = () => {
+    // eslint-disable-next-line no-debugger
+    debugger;
+    const value = inputRef.current.value;
+    const selectValue = selectRef.current.value;
+
+    if (value.trim()) {
+      setUrl(value);
+      setStrategy(selectValue);  
+    }
+  };
+
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
@@ -135,28 +176,39 @@ const SearchBarComponent = () => {
               <Search size={18} style={styles.searchIcon} />
               <input
                 id="url-input"
-                type="url"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                type="url"                
                 onFocus={() => setIsInputFocused(true)}
                 onBlur={() => setIsInputFocused(false)}
                 placeholder="https://example.com"
                 style={inputStyle}
+                 ref={inputRef}
                 required
               />
             </div>
           </div>
+
+           <SelectWrapper>
+          <StyledLabel htmlFor="my-select">Strategy</StyledLabel>
+          <StyledSelect id="my-select" ref={selectRef}>
+            <option value="" disabled>Select an option</option>
+            <option value="mobile"> 📱 Mobile</option>
+            <option value="desktop">💻 Desktop</option>
+          </StyledSelect>
+        </SelectWrapper>
           
           <button
             type="button"
-            disabled={!url.trim()}
+            disabled={isLoading}
             style={buttonStyle}
             onMouseEnter={() => setIsButtonHovered(true)}
             onMouseLeave={() => setIsButtonHovered(false)}
             onClick={handleSubmit}
           >
-            <Plus size={16} />
-            Add URL
+           
+           
+              {isLoading ?  <Loader size={16}  /> : <Plus size={16} />}
+
+              {isLoading ? 'Analysing...' :'Analyse'}
           </button>
         </div>
         

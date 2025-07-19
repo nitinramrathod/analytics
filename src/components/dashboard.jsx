@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, Users, ShoppingCart, DollarSign, Activity, Calendar, Filter } from 'lucide-react';
@@ -284,16 +285,24 @@ const Dashboard = () => {
     }
   `;
 
-  const [analytics, setAnalytics] = useState({})
+  const [analytics, setAnalytics] = useState({});
+  const [url, setUrl] = useState('https://www.dnsbank.in')
+  const [strategy, setStrategy] = useState('mobile');
+  const [isLoading, setIsLoading] = useState(false);
+  
 
   useEffect(() => {
-    async function fetchData() {
-      const data = await fetchPageSpeed('https://www.dnsbank.in', 'mobile' );
+    debugger;
+    async function fetchData() {  
+      setIsLoading(true)  
+      const data = await fetchPageSpeed(url, strategy );
       console.log('data', data);
       setAnalytics(data)
+      setIsLoading(false)  
+
     }
     fetchData();
-  }, []);
+  }, [strategy, url]);
 
   console.log('analytics', analytics)
   
@@ -333,7 +342,10 @@ const Dashboard = () => {
         </div>
 
          <div>
-              <SearchBarComponent></SearchBarComponent>
+
+         
+         
+              <SearchBarComponent setUrl={setUrl} isLoading={isLoading} setStrategy={setStrategy} url={url}></SearchBarComponent>
             </div>
 
         {/* Metrics Cards */}
