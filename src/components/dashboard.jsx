@@ -28,6 +28,7 @@ import { MetricsDashboard } from "./metrics/Metrics";
 import PageSpeedDashboard from "./metrics/NewMetrics";
 import WebVitalsStats from "./metrics/WebVitalsStats";
 import PerformanceCards from "./metrics/PerformanceCards";
+import WebsiteAnalyticsInsights from "./insights/WebsiteAnalyticsInsights";
 
 const Dashboard = () => {
   const [timeFilter, setTimeFilter] = useState("7d");
@@ -309,7 +310,7 @@ const Dashboard = () => {
   `;
 
   const [analytics, setAnalytics] = useState({});
-  const [url, setUrl] = useState('https://www.dnsbank.in')
+  const [url, setUrl] = useState("https://www.dnsbank.in");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setError] = useState(false);
   
@@ -333,8 +334,7 @@ const Dashboard = () => {
     fetchData(url, strategy);
   }
 
-  console.log("analytics", analytics);
-  console.log(analytics?.loadingExperience?.metrics);
+
   return (
     <div style={styles.container}>
       <style>{mediaStyles}</style>
@@ -371,9 +371,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-         <div>
-            <SearchBarComponent handleAnalyse={handleAnalyse} isLoading={isLoading} url={url}></SearchBarComponent>
-          </div>
+        <div>
+          <SearchBarComponent
+            handleAnalyse={handleAnalyse}
+            isLoading={isLoading}
+            url={url}
+          ></SearchBarComponent>
+        </div>
 
         {/* Metrics Cards */}
 
@@ -390,6 +394,10 @@ const Dashboard = () => {
 
         {analytics?.loadingExperience?.metrics && (
           <PageSpeedDashboard data={analytics} />
+        )}
+
+        {analytics?.loadingExperience?.metrics && (
+          <WebsiteAnalyticsInsights data={analytics} />
         )}
       </div>
     </div>
