@@ -284,13 +284,18 @@ const Dashboard = () => {
     }
   `;
 
+  const [analytics, setAnalytics] = useState({})
+
   useEffect(() => {
     async function fetchData() {
       const data = await fetchPageSpeed('https://www.dnsbank.in', 'mobile' );
       console.log('data', data);
+      setAnalytics(data)
     }
     fetchData();
   }, []);
+
+  console.log('analytics', analytics)
   
 
   return (
