@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, Users, ShoppingCart, DollarSign, Activity, Calendar, Filter } from 'lucide-react';
 import SearchBarComponent from './SearchBar';
+import { fetchPageSpeed } from './common';
 
 const Dashboard = () => {
   const [timeFilter, setTimeFilter] = useState('7d');
@@ -282,6 +283,15 @@ const Dashboard = () => {
       background: #1d4ed8;
     }
   `;
+
+  useEffect(() => {
+    async function fetchData() {
+      const data = await fetchPageSpeed('https://www.dnsbank.in', 'mobile' );
+      console.log('data', data);
+    }
+    fetchData();
+  }, []);
+  
 
   return (
     <div style={styles.container}>
