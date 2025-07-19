@@ -225,148 +225,257 @@ const PriorityLabel = styled.span`
   }}
 `;
 
-// Analysis functions
-const analyzeMetrics = (data) => {
+// Helper function to parse PageSpeed API response
+const parsePageSpeedData = (apiResponse) => {
+  if (!apiResponse || !apiResponse.lighthouseResult) {
+    return null;
+  }
+
+  const lighthouse = apiResponse.lighthouseResult;
+  const audits = lighthouse.audits || {};
+
+  return {
+    performanceScore: Math.round(
+      (lighthouse.categories?.performance?.score || 0) * 100
+    ),
+    accessibilityScore: Math.round(
+      (lighthouse.categories?.accessibility?.score || 0) * 100
+    ),
+    bestPracticesScore: Math.round(
+      (lighthouse.categories?.["best-practices"]?.score || 0) * 100
+    ),
+    seoScore: Math.round((lighthouse.categories?.seo?.score || 0) * 100),
+
+    // Core Web Vitals
+    lcp: audits["largest-contentful-paint"]?.numericValue
+      ? Math.round(audits["largest-contentful-paint"].numericValue)
+      : null,
+    fid: audits["max-potential-fid"]?.numericValue
+      ? Math.round(audits["max-potential-fid"].numericValue)
+      : null,
+    cls: audits["cumulative-layout-shift"]?.numericValue
+      ? Math.round(audits["cumulative-layout-shift"].numericValue * 1000) / 1000
+      : null,
+    fcp: audits["first-contentful-paint"]?.numericValue
+      ? Math.round(audits["first-contentful-paint"].numericValue)
+      : null,
+
+    // Other metrics
+    speedIndex: audits["speed-index"]?.numericValue
+      ? Math.round(audits["speed-index"].numericValue)
+      : null,
+    tti: audits["interactive"]?.numericValue
+      ? Math.round(audits["interactive"].numericValue)
+      : null,
+    totalBlockingTime: audits["total-blocking-time"]?.numericValue
+      ? Math.round(audits["total-blocking-time"].numericValue)
+      : null,
+
+    // Opportunities and diagnostics
+    opportunities: lighthouse.audits
+      ? Object.values(lighthouse.audits)
+          .filter(
+            (audit) =>
+              audit.details &&
+              audit.details.type === "opportunity" &&
+              audit.numericValue > 100
+          )
+          .sort((a, b) => b.numericValue - a.numericValue)
+          .slice(0, 5)
+      : [],
+
+    diagnostics: lighthouse.audits
+      ? Object.values(lighthouse.audits)
+          .filter(
+            (audit) =>
+              audit.score !== null &&
+              audit.score < 1 &&
+              audit.title &&
+              audit.description
+          )
+          .sort((a, b) => a.score - b.score)
+          .slice(0, 5)
+      : [],
+  };
+};
+
+// Analysis functions for PageSpeed data
+const analyzeMetrics = (apiResponse) => {
+  const data = parsePageSpeedData(apiResponse);
+
+  if (!data) {
+    return {
+      performance: {
+        status: "warning",
+        issues: [
+          { severity: "medium", text: "Unable to parse PageSpeed data" },
+        ],
+        actions: [],
+      },
+      coreWebVitals: { status: "warning", issues: [], actions: [] },
+      seo: { status: "warning", issues: [], actions: [] },
+      accessibility: { status: "warning", issues: [], actions: [] },
+    };
+  }
+
   const insights = {
     performance: { status: "good", issues: [], actions: [] },
-    engagement: { status: "good", issues: [], actions: [] },
-    conversion: { status: "good", issues: [], actions: [] },
-    traffic: { status: "good", issues: [], actions: [] },
+    coreWebVitals: { status: "good", issues: [], actions: [] },
+    seo: { status: "good", issues: [], actions: [] },
+    accessibility: { status: "good", issues: [], actions: [] },
   };
 
-  // Bounce Rate Analysis
-  if (data.bounceRate > 70) {
-    insights.engagement.status = "critical";
-    insights.engagement.issues.push({
-      severity: "high",
-      text: `Bounce rate is critically high at ${data.bounceRate}%`,
-    });
-    insights.engagement.actions.push({
-      priority: "high",
-      text: "Improve page loading speed and content relevance",
-    });
-    insights.engagement.actions.push({
-      priority: "high",
-      text: "Review landing page design and call-to-actions",
-    });
-  } else if (data.bounceRate > 50) {
-    insights.engagement.status = "warning";
-    insights.engagement.issues.push({
-      severity: "medium",
-      text: `Bounce rate is above average at ${data.bounceRate}%`,
-    });
-    insights.engagement.actions.push({
-      priority: "medium",
-      text: "Optimize content to better match user intent",
-    });
-  }
-
-  // Session Duration Analysis
-  const avgSessionMinutes = data.avgSessionDuration / 60;
-  if (avgSessionMinutes < 1) {
-    insights.engagement.status =
-      insights.engagement.status === "critical" ? "critical" : "warning";
-    insights.engagement.issues.push({
-      severity: "medium",
-      text: `Very short average session duration (${avgSessionMinutes.toFixed(
-        1
-      )} minutes)`,
-    });
-    insights.engagement.actions.push({
-      priority: "medium",
-      text: "Add engaging content and internal linking",
-    });
-  }
-
-  // Conversion Rate Analysis
-  if (data.conversionRate < 2) {
-    insights.conversion.status = "critical";
-    insights.conversion.issues.push({
-      severity: "high",
-      text: `Conversion rate is very low at ${data.conversionRate}%`,
-    });
-    insights.conversion.actions.push({
-      priority: "high",
-      text: "A/B test landing pages and checkout process",
-    });
-    insights.conversion.actions.push({
-      priority: "high",
-      text: "Review and optimize conversion funnel",
-    });
-  } else if (data.conversionRate < 5) {
-    insights.conversion.status = "warning";
-    insights.conversion.issues.push({
-      severity: "medium",
-      text: `Conversion rate could be improved (${data.conversionRate}%)`,
-    });
-    insights.conversion.actions.push({
-      priority: "medium",
-      text: "Optimize call-to-action buttons and forms",
-    });
-  }
-
-  // Page Load Time Analysis
-  if (data.pageLoadTime > 3) {
+  // Performance Score Analysis
+  if (data.performanceScore < 50) {
     insights.performance.status = "critical";
     insights.performance.issues.push({
       severity: "high",
-      text: `Page load time is too slow (${data.pageLoadTime}s)`,
+      text: `Performance score is critically low (${data.performanceScore}/100)`,
     });
     insights.performance.actions.push({
       priority: "high",
-      text: "Optimize images and enable compression",
+      text: "Optimize images and eliminate render-blocking resources",
     });
     insights.performance.actions.push({
       priority: "high",
-      text: "Implement CDN and caching strategies",
+      text: "Implement lazy loading and code splitting",
     });
-  } else if (data.pageLoadTime > 2) {
+  } else if (data.performanceScore < 90) {
     insights.performance.status = "warning";
     insights.performance.issues.push({
       severity: "medium",
-      text: `Page load time could be faster (${data.pageLoadTime}s)`,
+      text: `Performance score needs improvement (${data.performanceScore}/100)`,
     });
     insights.performance.actions.push({
       priority: "medium",
-      text: "Minify CSS/JS and optimize server response",
+      text: "Minify CSS/JS and optimize server response times",
     });
   }
 
-  // Traffic Source Analysis
-  if (data.organicTrafficPercent < 30) {
-    insights.traffic.status = "warning";
-    insights.traffic.issues.push({
+  // Core Web Vitals Analysis
+  if (data.lcp && data.lcp > 2500) {
+    insights.coreWebVitals.status = "critical";
+    insights.coreWebVitals.issues.push({
+      severity: "high",
+      text: `LCP is too slow (${(data.lcp / 1000).toFixed(
+        1
+      )}s) - Target: <2.5s`,
+    });
+    insights.coreWebVitals.actions.push({
+      priority: "high",
+      text: "Optimize largest contentful paint element",
+    });
+  } else if (data.lcp && data.lcp > 1500) {
+    insights.coreWebVitals.status = "warning";
+    insights.coreWebVitals.issues.push({
       severity: "medium",
-      text: `Low organic traffic percentage (${data.organicTrafficPercent}%)`,
-    });
-    insights.traffic.actions.push({
-      priority: "medium",
-      text: "Improve SEO strategy and content marketing",
-    });
-    insights.traffic.actions.push({
-      priority: "low",
-      text: "Research and target high-value keywords",
+      text: `LCP could be faster (${(data.lcp / 1000).toFixed(
+        1
+      )}s) - Target: <2.5s`,
     });
   }
+
+  if (data.cls && data.cls > 0.1) {
+    insights.coreWebVitals.status =
+      insights.coreWebVitals.status === "critical" ? "critical" : "warning";
+    insights.coreWebVitals.issues.push({
+      severity: data.cls > 0.25 ? "high" : "medium",
+      text: `CLS is too high (${data.cls}) - Target: <0.1`,
+    });
+    insights.coreWebVitals.actions.push({
+      priority: data.cls > 0.25 ? "high" : "medium",
+      text: "Set explicit dimensions for images and ads",
+    });
+  }
+
+  if (data.fid && data.fid > 100) {
+    insights.coreWebVitals.status =
+      insights.coreWebVitals.status === "critical" ? "critical" : "warning";
+    insights.coreWebVitals.issues.push({
+      severity: "medium",
+      text: `FID is too high (${data.fid}ms) - Target: <100ms`,
+    });
+    insights.coreWebVitals.actions.push({
+      priority: "medium",
+      text: "Reduce JavaScript execution time",
+    });
+  }
+
+  // SEO Score Analysis
+  if (data.seoScore < 80) {
+    insights.seo.status = data.seoScore < 60 ? "critical" : "warning";
+    insights.seo.issues.push({
+      severity: data.seoScore < 60 ? "high" : "medium",
+      text: `SEO score needs improvement (${data.seoScore}/100)`,
+    });
+    insights.seo.actions.push({
+      priority: data.seoScore < 60 ? "high" : "medium",
+      text: "Add meta descriptions and optimize title tags",
+    });
+    insights.seo.actions.push({
+      priority: "medium",
+      text: "Improve semantic HTML structure",
+    });
+  }
+
+  // Accessibility Score Analysis
+  if (data.accessibilityScore < 80) {
+    insights.accessibility.status =
+      data.accessibilityScore < 60 ? "critical" : "warning";
+    insights.accessibility.issues.push({
+      severity: data.accessibilityScore < 60 ? "high" : "medium",
+      text: `Accessibility score needs improvement (${data.accessibilityScore}/100)`,
+    });
+    insights.accessibility.actions.push({
+      priority: data.accessibilityScore < 60 ? "high" : "medium",
+      text: "Add alt text to images and improve color contrast",
+    });
+    insights.accessibility.actions.push({
+      priority: "medium",
+      text: "Ensure keyboard navigation and ARIA labels",
+    });
+  }
+
+  // Add specific opportunities as actions
+  data.opportunities.forEach((opportunity) => {
+    const savingsMs = opportunity.numericValue;
+    if (savingsMs > 500) {
+      insights.performance.actions.push({
+        priority: savingsMs > 1000 ? "high" : "medium",
+        text: opportunity.title + ` (Save ~${(savingsMs / 1000).toFixed(1)}s)`,
+      });
+    }
+  });
 
   return insights;
 };
 
-const GoogleAnalyticsInsights = ({ analyticsData }) => {
-  // Default data structure for demonstration
+const GoogleAnalyticsInsights = ({ pageSpeedData }) => {
+  // Default PageSpeed API response structure for demonstration
   const defaultData = {
-    sessions: 15420,
-    bounceRate: 65,
-    avgSessionDuration: 180, // in seconds
-    pageViews: 45680,
-    conversionRate: 3.2,
-    pageLoadTime: 2.8,
-    organicTrafficPercent: 45,
-    returningVisitorPercent: 35,
+    lighthouseResult: {
+      categories: {
+        performance: { score: 0.75 },
+        accessibility: { score: 0.85 },
+        "best-practices": { score: 0.9 },
+        seo: { score: 0.88 },
+      },
+      audits: {
+        "largest-contentful-paint": { numericValue: 2200 },
+        "first-contentful-paint": { numericValue: 1100 },
+        "cumulative-layout-shift": { numericValue: 0.15 },
+        "max-potential-fid": { numericValue: 85 },
+        "speed-index": { numericValue: 3200 },
+        interactive: { numericValue: 4500 },
+        "total-blocking-time": { numericValue: 350 },
+      },
+    },
   };
 
-  const data = analyticsData || defaultData;
-  const insights = analyzeMetrics(data);
+  const apiResponse = pageSpeedData || defaultData;
+  console.log(apiResponse);
+  const data = parsePageSpeedData(apiResponse);
+  const insights = analyzeMetrics(apiResponse);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -411,7 +520,7 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
             >
               {getStatusIcon(insights.performance.status)}
             </IconWrapper>
-            <CardTitle>Performance</CardTitle>
+            <CardTitle>Performance Score</CardTitle>
             <StatusBadge status={insights.performance.status}>
               {insights.performance.status}
             </StatusBadge>
@@ -422,9 +531,9 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
               insights.performance.status === "critical" ? "#e53e3e" : "#2d3748"
             }
           >
-            {data.pageLoadTime}s
+            {data?.performanceScore || 0}/100
           </MetricValue>
-          <MetricLabel>Average Page Load Time</MetricLabel>
+          <MetricLabel>Google PageSpeed Score</MetricLabel>
 
           {insights.performance.issues.length > 0 && (
             <IssuesList>
@@ -453,33 +562,60 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
           </ActionsList>
         </Card>
 
-        {/* Engagement Card */}
+        {/* Core Web Vitals Card */}
         <Card>
           <CardHeader>
             <IconWrapper
-              bg={getStatusColor(insights.engagement.status)}
-              critical={insights.engagement.status === "critical"}
+              bg={getStatusColor(insights.coreWebVitals.status)}
+              critical={insights.coreWebVitals.status === "critical"}
             >
-              {getStatusIcon(insights.engagement.status)}
+              {getStatusIcon(insights.coreWebVitals.status)}
             </IconWrapper>
-            <CardTitle>User Engagement</CardTitle>
-            <StatusBadge status={insights.engagement.status}>
-              {insights.engagement.status}
+            <CardTitle>Core Web Vitals</CardTitle>
+            <StatusBadge status={insights.coreWebVitals.status}>
+              {insights.coreWebVitals.status}
             </StatusBadge>
           </CardHeader>
 
-          <MetricValue
-            color={
-              insights.engagement.status === "critical" ? "#e53e3e" : "#2d3748"
-            }
-          >
-            {data.bounceRate}%
-          </MetricValue>
-          <MetricLabel>Bounce Rate</MetricLabel>
+          <div style={{ display: "flex", gap: "16px", marginBottom: "16px" }}>
+            <div style={{ flex: 1 }}>
+              <MetricValue
+                color={
+                  data?.lcp > 2500
+                    ? "#e53e3e"
+                    : data?.lcp > 1500
+                    ? "#d69e2e"
+                    : "#38a169"
+                }
+                style={{ fontSize: "1.2rem" }}
+              >
+                {data?.lcp ? `${(data.lcp / 1000).toFixed(1)}s` : "N/A"}
+              </MetricValue>
+              <MetricLabel style={{ fontSize: "0.8rem" }}>LCP</MetricLabel>
+            </div>
+            <div style={{ flex: 1 }}>
+              <MetricValue
+                color={data?.cls > 0.1 ? "#e53e3e" : "#38a169"}
+                style={{ fontSize: "1.2rem" }}
+              >
+                {data?.cls ? data.cls.toFixed(3) : "N/A"}
+              </MetricValue>
+              <MetricLabel style={{ fontSize: "0.8rem" }}>CLS</MetricLabel>
+            </div>
+            <div style={{ flex: 1 }}>
+              <MetricValue
+                color={data?.fid > 100 ? "#d69e2e" : "#38a169"}
+                style={{ fontSize: "1.2rem" }}
+              >
+                {data?.fid ? `${data.fid}ms` : "N/A"}
+              </MetricValue>
+              <MetricLabel style={{ fontSize: "0.8rem" }}>FID</MetricLabel>
+            </div>
+          </div>
 
-          {insights.engagement.issues.length > 0 && (
+          {insights.coreWebVitals.issues.length > 0 && (
             <IssuesList>
-              {insights.engagement.issues.map((issue, index) => (
+              {insights.coreWebVitals.issues.map((issue, index) => (
                 <IssueItem key={index} severity={issue.severity}>
                   <TrendingDown
                     size={16}
@@ -492,9 +628,9 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
           )}
 
           <ActionsList>
-            {insights.engagement.actions.map((action, index) => (
+            {insights.coreWebVitals.actions.map((action, index) => (
               <ActionItem key={index} priority={action.priority}>
-                <Users size={16} />
+                <Clock size={16} />
                 <ActionText>{action.text}</ActionText>
                 <PriorityLabel priority={action.priority}>
                   {action.priority}
@@ -504,33 +640,31 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
           </ActionsList>
         </Card>
 
-        {/* Conversion Card */}
+        {/* SEO Card */}
         <Card>
           <CardHeader>
             <IconWrapper
-              bg={getStatusColor(insights.conversion.status)}
-              critical={insights.conversion.status === "critical"}
+              bg={getStatusColor(insights.seo.status)}
+              critical={insights.seo.status === "critical"}
             >
-              {getStatusIcon(insights.conversion.status)}
+              {getStatusIcon(insights.seo.status)}
             </IconWrapper>
-            <CardTitle>Conversions</CardTitle>
-            <StatusBadge status={insights.conversion.status}>
-              {insights.conversion.status}
+            <CardTitle>SEO Score</CardTitle>
+            <StatusBadge status={insights.seo.status}>
+              {insights.seo.status}
             </StatusBadge>
           </CardHeader>
 
           <MetricValue
-            color={
-              insights.conversion.status === "critical" ? "#e53e3e" : "#2d3748"
-            }
+            color={insights.seo.status === "critical" ? "#e53e3e" : "#2d3748"}
           >
-            {data.conversionRate}%
+            {data?.seoScore || 0}/100
           </MetricValue>
-          <MetricLabel>Conversion Rate</MetricLabel>
+          <MetricLabel>Search Engine Optimization</MetricLabel>
 
-          {insights.conversion.issues.length > 0 && (
+          {insights.seo.issues.length > 0 && (
             <IssuesList>
-              {insights.conversion.issues.map((issue, index) => (
+              {insights.seo.issues.map((issue, index) => (
                 <IssueItem key={index} severity={issue.severity}>
                   <TrendingDown
                     size={16}
@@ -543,7 +677,7 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
           )}
 
           <ActionsList>
-            {insights.conversion.actions.map((action, index) => (
+            {insights.seo.actions.map((action, index) => (
               <ActionItem key={index} priority={action.priority}>
                 <TrendingUp size={16} />
                 <ActionText>{action.text}</ActionText>
@@ -555,33 +689,35 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
           </ActionsList>
         </Card>
 
-        {/* Traffic Card */}
+        {/* Accessibility Card */}
         <Card>
           <CardHeader>
             <IconWrapper
-              bg={getStatusColor(insights.traffic.status)}
-              critical={insights.traffic.status === "critical"}
+              bg={getStatusColor(insights.accessibility.status)}
+              critical={insights.accessibility.status === "critical"}
             >
-              {getStatusIcon(insights.traffic.status)}
+              {getStatusIcon(insights.accessibility.status)}
             </IconWrapper>
-            <CardTitle>Traffic Sources</CardTitle>
-            <StatusBadge status={insights.traffic.status}>
-              {insights.traffic.status}
+            <CardTitle>Accessibility</CardTitle>
+            <StatusBadge status={insights.accessibility.status}>
+              {insights.accessibility.status}
             </StatusBadge>
           </CardHeader>
 
           <MetricValue
             color={
-              insights.traffic.status === "critical" ? "#e53e3e" : "#2d3748"
+              insights.accessibility.status === "critical"
+                ? "#e53e3e"
+                : "#2d3748"
             }
           >
-            {data.organicTrafficPercent}%
+            {data?.accessibilityScore || 0}/100
           </MetricValue>
-          <MetricLabel>Organic Traffic</MetricLabel>
+          <MetricLabel>Web Accessibility</MetricLabel>
 
-          {insights.traffic.issues.length > 0 && (
+          {insights.accessibility.issues.length > 0 && (
             <IssuesList>
-              {insights.traffic.issues.map((issue, index) => (
+              {insights.accessibility.issues.map((issue, index) => (
                 <IssueItem key={index} severity={issue.severity}>
                   <AlertTriangle
                     size={16}
@@ -594,9 +730,9 @@ const GoogleAnalyticsInsights = ({ analyticsData }) => {
           )}
 
           <ActionsList>
-            {insights.traffic.actions.map((action, index) => (
+            {insights.accessibility.actions.map((action, index) => (
               <ActionItem key={index} priority={action.priority}>
-                <Eye size={16} />
+                <Users size={16} />
                 <ActionText>{action.text}</ActionText>
                 <PriorityLabel priority={action.priority}>
                   {action.priority}

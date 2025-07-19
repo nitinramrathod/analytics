@@ -387,7 +387,7 @@ const Dashboard = () => {
         )}
 
         {analytics?.loadingExperience?.metrics && (
-          <WebsiteAnalyticsInsights data={analytics} />
+          <WebsiteAnalyticsInsights pageSpeedData={analytics} />
         )}
       </div>
     </div>
