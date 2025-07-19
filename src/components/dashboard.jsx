@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useState } from "react";
 import {
   BarChart,
   Bar,
@@ -311,6 +311,7 @@ const Dashboard = () => {
   const [analytics, setAnalytics] = useState({});
   const [url, setUrl] = useState('https://www.dnsbank.in')
   const [isLoading, setIsLoading] = useState(false);
+  const [isError, setError] = useState(false);
   
 
 
@@ -319,6 +320,9 @@ const Dashboard = () => {
       setIsLoading(true)  
       const data = await fetchPageSpeed(url, strategy );
       console.log('data', data);
+      if(!data){
+        setError(true)
+      }
       setAnalytics(data)
       setIsLoading(false)  
 
