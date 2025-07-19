@@ -1,4 +1,4 @@
-import React, {useState } from "react";
+import React, { useState } from "react";
 import {
   BarChart,
   Bar,
@@ -313,27 +313,22 @@ const Dashboard = () => {
   const [url, setUrl] = useState("https://www.dnsbank.in");
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setError] = useState(false);
-  
 
-
-    
-    async function fetchData(url, strategy) {  
-      setIsLoading(true)  
-      const data = await fetchPageSpeed(url, strategy );
-      console.log('data', data);
-      if(!data){
-        setError(true)
-      }
-      setAnalytics(data)
-      setIsLoading(false)  
-
+  async function fetchData(url, strategy) {
+    setIsLoading(true);
+    setAnalytics({});
+    const data = await fetchPageSpeed(url, strategy);
+    console.log("data", data);
+    if (!data) {
+      setError(true);
     }
-  
-
-  const handleAnalyse = (url, strategy )=>{
-    fetchData(url, strategy);
+    setAnalytics(data);
+    setIsLoading(false);
   }
 
+  const handleAnalyse = (url, strategy) => {
+    fetchData(url, strategy);
+  };
 
   return (
     <div style={styles.container}>
@@ -370,37 +365,35 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
-        
       </div>
       <div>
-          <SearchBarComponent
-            handleAnalyse={handleAnalyse}
-            isLoading={isLoading}
-            url={url}
-          ></SearchBarComponent>
-        </div>
+        <SearchBarComponent
+          handleAnalyse={handleAnalyse}
+          isLoading={isLoading}
+          url={url}
+        ></SearchBarComponent>
+      </div>
 
-        {/* Metrics Cards */}
+      {/* Metrics Cards */}
 
-        {/* {analytics?.loadingExperience?.metrics && (
+      {/* {analytics?.loadingExperience?.metrics && (
           <MetricsDashboard metrics={analytics.loadingExperience.metrics} />
         )} */}
-        {/* {analytics?.loadingExperience?.metrics && (
+      {/* {analytics?.loadingExperience?.metrics && (
           <WebVitalsStats metrics={analytics.loadingExperience.metrics} />
         )} */}
-        
-        {analytics?.loadingExperience?.metrics && (
-          <PerformanceCards metrics={analytics} />
-        )}
 
-        {analytics?.loadingExperience?.metrics && (
-          <PageSpeedDashboard data={analytics} />
-        )}
+      {analytics?.loadingExperience?.metrics && (
+        <PerformanceCards metrics={analytics} apiResponse={analytics} />
+      )}
 
-        {analytics?.loadingExperience?.metrics && (
-          <WebsiteAnalyticsInsights pageSpeedData={analytics} />
-        )}
+      {analytics?.loadingExperience?.metrics && (
+        <PageSpeedDashboard data={analytics} />
+      )}
+
+      {analytics?.loadingExperience?.metrics && (
+        <WebsiteAnalyticsInsights pageSpeedData={analytics} />
+      )}
     </div>
   );
 };

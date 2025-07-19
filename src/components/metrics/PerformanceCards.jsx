@@ -101,7 +101,7 @@ const getIcon = (metric) => {
   const icons = {
     performance: "⚡",
     accessibility: "♿",
-    "best practices": "✅",
+    "best-practices": "✅",
     seo: "🔍",
   };
   return icons[metric.toLowerCase()] || "📊";
@@ -135,7 +135,7 @@ const MetricCard = ({ metric, score }) => {
   return (
     <Card>
       <MetricIcon>{icon}</MetricIcon>
-      <MetricTitle>{metric}</MetricTitle>
+      <MetricTitle>{metric.replace("-", " ")}</MetricTitle>
       <ChartContainer>
         <CircularProgress score={score} color={color} />
         <ScoreText color={color}>{score}</ScoreText>
@@ -145,16 +145,58 @@ const MetricCard = ({ metric, score }) => {
   );
 };
 
-const PerformanceCards = ({ data = null }) => {
-  // Default demo data if no data is passed
+// Function to extract and transform PageSpeed Insights API data
+const extractMetricsFromPageSpeedData = (apiResponse) => {
+  try {
+    // Navigate to the lighthouse results in the API response
+    const categories = apiResponse?.lighthouseResult?.categories;
+
+    if (!categories) {
+      console.warn("No lighthouse categories found in API response");
+      return null;
+    }
+
+    // Extract scores and convert from 0-1 scale to 0-100 scale
+    const metrics = {};
+
+    if (categories.performance) {
+      metrics.performance = Math.round(categories.performance.score * 100);
+    }
+
+    if (categories.accessibility) {
+      metrics.accessibility = Math.round(categories.accessibility.score * 100);
+    }
+
+    if (categories["best-practices"]) {
+      metrics["best-practices"] = Math.round(
+        categories["best-practices"].score * 100
+      );
+    }
+
+    if (categories.seo) {
+      metrics.seo = Math.round(categories.seo.score * 100);
+    }
+
+    return metrics;
+  } catch (error) {
+    console.error("Error extracting metrics from PageSpeed data:", error);
+    return null;
+  }
+};
+
+const PerformanceCards = ({ apiResponse = null }) => {
+  // Default demo data if no API response is passed
   const defaultData = {
     performance: 85,
     accessibility: 92,
-    "best practices": 78,
+    "best-practices": 78,
     seo: 96,
   };
 
-  const metricsData = data || defaultData;
+  // Extract metrics from API response or use default data
+  const metricsData = apiResponse
+    ? extractMetricsFromPageSpeedData(apiResponse) || defaultData
+    : defaultData;
 
   return (
     <Container>

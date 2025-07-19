@@ -1,11 +1,10 @@
 export async function fetchPageSpeed(url = "", strategy = "mobile") {
   const apiKey = "AIzaSyD8KqyU2gNEKNwmO9scS-xiQSqZAMP_ioU";
-  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${url}&strategy=${strategy}&key=${apiKey}`;
+  const endpoint = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${url}&strategy=${strategy}&key=${apiKey}&category=performance&category=accessibility&category=best-practices&category=seo&category=pwa`;
 
   try {
     const response = await fetch(endpoint);
-    if (!response.ok)
-      throw new Error(`HTTP error! Status: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
     const data = await response.json();
 
