@@ -1,13 +1,13 @@
-import Dashboard from './components/dashboard'
-import LighthouseAnalyzer from './components/lightHouse'
+import Dashboard from "./components/dashboard";
+import LighthouseAnalyzer from "./components/lightHouse";
 
 function App() {
   return (
-  <>
-  <Dashboard/>
-  {/* <LighthouseAnalyzer></LighthouseAnalyzer> */}
-  </>
-  )
+    <>
+      <Dashboard />
+      <LighthouseAnalyzer></LighthouseAnalyzer>
+    </>
+  );
 }
 
-export default App
+export default App;

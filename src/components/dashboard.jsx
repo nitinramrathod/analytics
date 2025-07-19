@@ -28,6 +28,7 @@ import { MetricsDashboard } from "./metrics/Metrics";
 import PageSpeedDashboard from "./metrics/NewMetrics";
 import WebVitalsStats from "./metrics/WebVitalsStats";
 import PerformanceCards from "./metrics/PerformanceCards";
+import WebsiteAnalyticsInsights from "./insights/WebsiteAnalyticsInsights";
 
 const Dashboard = () => {
   const [timeFilter, setTimeFilter] = useState("7d");
@@ -309,26 +310,22 @@ const Dashboard = () => {
   `;
 
   const [analytics, setAnalytics] = useState({});
-  const [url, setUrl] = useState('https://www.dnsbank.in')
-  const [strategy, setStrategy] = useState('mobile');
+  const [url, setUrl] = useState("https://www.dnsbank.in");
+  const [strategy, setStrategy] = useState("mobile");
   const [isLoading, setIsLoading] = useState(false);
-  
 
   useEffect(() => {
     debugger;
-    async function fetchData() {  
-      setIsLoading(true)  
-      const data = await fetchPageSpeed(url, strategy );
-      console.log('data', data);
-      setAnalytics(data)
-      setIsLoading(false)  
-
+    async function fetchData() {
+      setIsLoading(true);
+      const data = await fetchPageSpeed(url, strategy);
+      console.log("data", data);
+      setAnalytics(data);
+      setIsLoading(false);
     }
     fetchData();
   }, [strategy, url]);
 
-  console.log("analytics", analytics);
-  console.log(analytics?.loadingExperience?.metrics);
   return (
     <div style={styles.container}>
       <style>{mediaStyles}</style>
@@ -365,12 +362,14 @@ const Dashboard = () => {
           </div>
         </div>
 
-         <div>
-
-         
-         
-              <SearchBarComponent setUrl={setUrl} isLoading={isLoading} setStrategy={setStrategy} url={url}></SearchBarComponent>
-            </div>
+        <div>
+          <SearchBarComponent
+            setUrl={setUrl}
+            isLoading={isLoading}
+            setStrategy={setStrategy}
+            url={url}
+          ></SearchBarComponent>
+        </div>
 
         {/* Metrics Cards */}
 
@@ -387,6 +386,10 @@ const Dashboard = () => {
 
         {analytics?.loadingExperience?.metrics && (
           <PageSpeedDashboard data={analytics} />
+        )}
+
+        {analytics?.loadingExperience?.metrics && (
+          <WebsiteAnalyticsInsights data={analytics} />
         )}
       </div>
     </div>
