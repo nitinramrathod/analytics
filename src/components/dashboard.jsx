@@ -99,7 +99,7 @@ const Dashboard = () => {
   const styles = {
     container: {
       backgroundColor: "#f9fafb",
-      padding: "1.5rem",
+      // padding: "1.5rem",
     },
     maxWidthContainer: {
       maxWidth: "80rem",
@@ -345,7 +345,7 @@ const Dashboard = () => {
             <div>
               <h1 style={styles.title}>Analytics Dashboard</h1>
               <p style={styles.subtitle}>
-                Track your business performance and metrics
+                Track your website performance and metrics
               </p>
             </div>
 
@@ -371,7 +371,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div>
+        
+      </div>
+      <div>
           <SearchBarComponent
             handleAnalyse={handleAnalyse}
             isLoading={isLoading}
@@ -387,7 +389,7 @@ const Dashboard = () => {
         {/* {analytics?.loadingExperience?.metrics && (
           <WebVitalsStats metrics={analytics.loadingExperience.metrics} />
         )} */}
-
+        
         {analytics?.loadingExperience?.metrics && (
           <PerformanceCards metrics={analytics} />
         )}
@@ -399,7 +401,6 @@ const Dashboard = () => {
         {analytics?.loadingExperience?.metrics && (
           <WebsiteAnalyticsInsights data={analytics} />
         )}
-      </div>
     </div>
   );
 };
