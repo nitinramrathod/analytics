@@ -31,10 +31,9 @@ const StyledLabel = styled.label`
 `;
 
 const SearchBarComponent = ({
-  setUrl,
   url,
   isLoading,
-  setStrategy
+  handleAnalyse
 }) => {
   const styles = {
     container: {
@@ -150,14 +149,11 @@ const SearchBarComponent = ({
   const selectRef = useRef(null);
 
   const handleSubmit = () => {
-    // eslint-disable-next-line no-debugger
-    debugger;
-    const value = inputRef.current.value;
-    const selectValue = selectRef.current.value;
+    const url = inputRef.current.value;
+    const strategy = selectRef.current.value;
 
-    if (value.trim()) {
-      setUrl(value);
-      setStrategy(selectValue);  
+    if (url.trim()) {
+      handleAnalyse(url,strategy );
     }
   };
 
