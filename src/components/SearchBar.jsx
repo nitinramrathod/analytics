@@ -38,10 +38,11 @@ const SearchBarComponent = ({
   const styles = {
     container: {
     backgroundColor: '#f9fafb',
-    marginBottom: '2.5rem'
+    marginBottom: '2.5rem',
+    padding: '0 2rem'
     },
     wrapper: {
-      margin: '0 auto',
+      // margin: '0 auto',
       backgroundColor: 'white',
       padding: '2rem',
       borderRadius: '12px',
@@ -53,7 +54,7 @@ const SearchBarComponent = ({
       fontWeight: '600',
       color: '#111827',
       marginBottom: '1.5rem',
-      textAlign: 'center'
+      textAlign: 'left'
     },
     form: {
       display: 'flex',

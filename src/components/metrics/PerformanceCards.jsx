@@ -10,6 +10,10 @@ const Container = styled.div`
   background: #f8fafc;
   // min-height: 100vh;
   align-items: center;
+  margin-bottom: 4.5rem;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const Card = styled.div`

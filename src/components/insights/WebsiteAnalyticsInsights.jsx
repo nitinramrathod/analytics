@@ -27,12 +27,15 @@ const slideIn = keyframes`
 
 // Styled Components
 const Container = styled.div`
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 24px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
   min-height: 100vh;
+  padding-bottom: 4rem;
   color: #333;
 `;
 
