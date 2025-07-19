@@ -9,7 +9,7 @@ const Dashboard = () => {
   // Sample data
   const metrics = [
     {
-      title: 'Total Revenue',
+      title: 'Performance',
       value: '$24,563',
       change: '+12.5%',
       trend: 'up',
@@ -17,7 +17,7 @@ const Dashboard = () => {
       color: '#059669'
     },
     {
-      title: 'Active Users',
+      title: 'Accessibility',
       value: '8,452',
       change: '+8.2%',
       trend: 'up',
@@ -25,7 +25,7 @@ const Dashboard = () => {
       color: '#2563eb'
     },
     {
-      title: 'Orders',
+      title: 'Best Practices',
       value: '1,234',
       change: '-3.1%',
       trend: 'down',
@@ -33,7 +33,7 @@ const Dashboard = () => {
       color: '#ea580c'
     },
     {
-      title: 'Conversion Rate',
+      title: 'SEO',
       value: '3.4%',
       change: '+0.8%',
       trend: 'up',

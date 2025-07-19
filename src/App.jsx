@@ -1,7 +1,12 @@
 import Dashboard from './components/dashboard'
+import LighthouseAnalyzer from './components/lightHouse'
 
 function App() {
-  return (<Dashboard/>
+  return (
+  <>
+  <Dashboard/>
+  {/* <LighthouseAnalyzer></LighthouseAnalyzer> */}
+  </>
   )
 }
 
